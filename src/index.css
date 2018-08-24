@@ -15,16 +15,26 @@ ul{
   margin-bottom: 10px;
   
 }
+/* .Result ul{
+
+} */
 .Result li {
   margin-top: 10px;
 }
 
-.Result .Records li{
+/* .Result .Records li{
   -webkit-column-count: 4;
   -moz-column-count: 4;
-  column-count: 4
+  column-count: 4 
+} */
+.Result .Records li div span{
+  text-align: center;
+  margin-right: 50px;
 }
-
+.Result .Records li div.item span{
+  text-align: center;
+  margin-right: 100px;
+}
 .Search{
   padding: 10px;
  
