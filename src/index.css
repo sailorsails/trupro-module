@@ -1,0 +1,40 @@
+body {
+  margin: 20px;
+  padding: 0;
+  font-family: sans-serif;
+}
+ul{
+  list-style-type: none;
+}
+.Result {
+  margin-top: 10px;
+  
+}
+.Result .Grid{
+  margin-top: 20px;
+  margin-bottom: 10px;
+  
+}
+.Result li {
+  margin-top: 10px;
+}
+
+.Result .Records li{
+  -webkit-column-count: 4;
+  -moz-column-count: 4;
+  column-count: 4
+}
+
+.Search{
+  padding: 10px;
+ 
+}
+.Search label{
+  font-size: 12px;
+}
+.Search .SearchType{
+  margin-bottom: 20px;
+}
+.Search .SearchTypeDropdown{
+  margin-top: 5px;
+}

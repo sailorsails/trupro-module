@@ -1,0 +1,25 @@
+{
+  "name": "trupro-module",
+  "version": "0.1.1",
+  "description": "A basic ReactJS website module for querying transaction data from the Etheruem Blockchain.",
+  "keywords": [
+    "ethereum",
+    "reactjs",
+    "web3js",
+    "blockchain"
+    ],
+  "private": false,
+  "dependencies": {
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "react-scripts": "1.1.5",
+    "web3-eth": "^1.0.0-beta.35"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "author": "S. Yale <npm@shawnyale.com> (https://www.npmjs.com/settings/sailorsails/packages)"
+}
