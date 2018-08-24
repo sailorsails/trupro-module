@@ -12,8 +12,6 @@ class EthHelper{
             currentBlockNumber: null,
             startBlockNumber: null,
             endBlockNumber: null,
-            // totalUncles: null,
-            // gasAverage: null,
             blocks: []
         }
     }

@@ -12,6 +12,8 @@ class App extends Component {
     this.state = {
       startBlockVal: 0,
       endBlockVal: 0,
+      totalUncles: null,
+      gasAverage: null,
       results:{
         totalEther: 0,
         percentContract: 0,
@@ -37,6 +39,32 @@ class App extends Component {
     // });
      
   }
+// getUncles(){
+    //     state.blocks.forEach(item =>{
+    //         state.totalUncles += item.uncles.length;
+    //     })
+    // }
+    // getGasAverage(){
+    //     var total = 0;
+    //     var count = 0;
+    //     state.blocks.forEach(block => {
+    //         count++;
+    //         total += block.gasUsed; 
+    //         console.log('Gas used: ', block.gasUsed);
+    //     });
+    //     state.gasAverage = (total/count) * 100;
+    // }
+    // calcTotalEther(){
+        
+    // }
+
+    // calcPercentContract(){
+
+    // }
+    // calcUniqueRecords(){
+
+    // }
+
   componentWillMount(){
     // this.setState(
     //   {
