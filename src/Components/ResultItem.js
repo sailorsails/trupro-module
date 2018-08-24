@@ -6,7 +6,7 @@ class ResultItem extends Component {
   render() {
     return (
       <li>
-        {this.props.result.address} {this.props.result.sendReceive} {this.props.result.totalEther} {this.props.result.isContract ? '✓' : null}
+        <div>{this.props.result.address} {this.props.result.sendReceive} {this.props.result.totalEther} {this.props.result.isContract ? '✓' : null}</div>
       </li>
     );
   }

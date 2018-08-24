@@ -38,52 +38,48 @@ class App extends Component {
      
   }
   componentWillMount(){
-    this.setState(
-      {
-        results: {
-          totalEther: 100,
-          percentContract: 10,
-          uniqueSent: 3,
-          uniqueReceived: 2,
-          gasAverage: 100020102,
-          records: [
-            {
-              address: '0x00000000',
-              totalEther: 10,
-              sendReceive: 'send',
-              isContract: false    
-            },
-            {
-              address: '0x11111111',
-              totalEther: 77,
-              sendReceive: 'send',
-              isContract: false    
-            },
-            {
-              address: '0x22222222',
-              totalEther: 100,
-              sendReceive: 'receive',
-              isContract: true    
-            },
-            {
-              address: '0x33333333',
-              totalEther: 204,
-              sendReceive: 'send',
-              isContract: false    
-            },
-          ]
-      }
-    });
+    // this.setState(
+    //   {
+    //     results: {
+    //       totalEther: 100,
+    //       percentContract: 10,
+    //       uniqueSent: 3,
+    //       uniqueReceived: 2,
+    //       gasAverage: 100020102,
+    //       records: [
+    //         {
+    //           address: '0x00000000',
+    //           totalEther: 10,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //         {
+    //           address: '0x11111111',
+    //           totalEther: 77,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //         {
+    //           address: '0x22222222',
+    //           totalEther: 100,
+    //           sendReceive: 'receive',
+    //           isContract: true    
+    //         },
+    //         {
+    //           address: '0x33333333',
+    //           totalEther: 204,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //       ]
+    //   }
+    // });
   }
   handleSearch(searchFirst, searchSecond){
     
     this.setState({startBlockVal: searchFirst, endBlockVal: searchSecond}, () =>{
       ethHelper.getCurrentBlockNumber(() => {
-          console.log('Callback from current block number');
-          console.log('Main start val: ', this.state.startBlockVal);
-          console.log('Main End block val: ', this.state.endBlockVal);
           ethHelper.getBlockRange(this.state.startBlockVal, this.state.endBlockVal, () =>{
-            console.log('Callback from get block range');
             ethHelper.getBlocks();
           });
       });
