@@ -4,7 +4,7 @@ import Search from './Components/Search';
 import Results from './Components/Results';
 import EthHelper from './Components/EthHelper';
 
-var ethHelper;
+let ethHelper = new EthHelper();   
 
 class App extends Component {
   constructor(){
@@ -23,87 +23,64 @@ class App extends Component {
         transactions: []
       }
     }
-    ethHelper = new EthHelper();     
   }
-// getUncles(){
-    //     state.blocks.forEach(item =>{
-    //         state.totalUncles += item.uncles.length;
-    //     })
-    // }
-    // getGasAverage(){
-    //     var total = 0;
-    //     var count = 0;
-    //     state.blocks.forEach(block => {
-    //         count++;
-    //         total += block.gasUsed; 
-    //         console.log('Gas used: ', block.gasUsed);
-    //     });
-    //     state.gasAverage = (total/count) * 100;
-    // }
-    // calcTotalEther(){
-        
-    // }
-
-    // calcPercentContract(){
-
-    // }
-    // calcUniqueRecords(){
-
-    // } 
 
   componentWillMount(){
-    this.setState(
-      {
-        results: {
-          totalEther: 100,
-          percentContract: 10,
-          uniqueSent: 3,
-          uniqueReceived: 2,
-          gasAverage: 100020102,
-          blocks: [
-            {
-              address: '0x00000000',
-              totalEther: 10,
-              sendReceive: 'send',
-              isContract: false    
-            },
-            {
-              address: '0x11111111',
-              totalEther: 77,
-              sendReceive: 'send',
-              isContract: false    
-            },
-            {
-              address: '0x22222222',
-              totalEther: 100,
-              sendReceive: 'receive',
-              isContract: true    
-            }, 
-            {
-              address: '0x33333333',
-              totalEther: 204,
-              sendReceive: 'send',
-              isContract: false    
-            },
-          ]
-      }
-    });
+    // this.setState(
+    //   {
+    //     results: {
+    //       totalEther: 100,
+    //       percentContract: 10,
+    //       uniqueSent: 3,
+    //       uniqueReceived: 2,
+    //       gasAverage: 100020102,
+    //       blocks: [
+    //         {
+    //           address: '0x00000000',
+    //           totalEther: 10,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //         {
+    //           address: '0x11111111',
+    //           totalEther: 77,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //         {
+    //           address: '0x22222222',
+    //           totalEther: 100,
+    //           sendReceive: 'receive',
+    //           isContract: true    
+    //         }, 
+    //         {
+    //           address: '0x33333333',
+    //           totalEther: 204,
+    //           sendReceive: 'send',
+    //           isContract: false    
+    //         },
+    //       ]
+    //   }
+    // });
   }
   handleSearch(searchFirst, searchSecond){
     
     this.setState({startBlockVal: searchFirst, endBlockVal: searchSecond}, () =>{
-      ethHelper.getCurrentBlockNumber(() => {
-          ethHelper.getBlockRange(this.state.startBlockVal, this.state.endBlockVal, () =>{
-            ethHelper.getBlocks(() =>{              
-              this.setState({results: {blocks: [ethHelper.getState()]}}, () =>{
-                if(this.state.results.blocks){
-                  ethHelper.getTransactions();
-                }
-              });
+      
+      ethHelper.getBlocksAndTransactions(this.state.startBlockVal, this.state.endBlockVal);
+      // ethHelper.getCurrentBlockNumber(() => {
+      //     ethHelper.getBlockRange(this.state.startBlockVal, this.state.endBlockVal, () =>{
+      //       ethHelper.getBlocks(() =>{              
+      //         this.setState({results: {blocks: [ethHelper.getState()]}}, () =>{
+      //           if(this.state.results.blocks){
+      //             console.log('MAIN blocks for trans: ', this.state.results.blocks);
+      //             ethHelper.getTransactions();
+      //           }
+      //         });
               
-            });
-          });
-      });
+      //       });
+      //     });
+      // });
     });
   }
   

@@ -1,23 +1,43 @@
 import Eth from 'web3-eth';
 
 // "Eth.providers.givenProvider" will be set if in an Ethereum supported browser.
-var eth = new Eth(Eth.givenProvider);
-var state;
+let eth = new Eth(Eth.givenProvider);
+let state = {
+    currentBlockNumber: null,
+    startBlockNumber: null,
+    endBlockNumber: null,
+    blockBatchCount: 0,
+    transactionBatchCount: 0,
+    blocks: [],
+    transactions:[],
+}
 
 class EthHelper{
-    
-    constructor(){
-        
+
+    getBlocksAndTransactions(start, end, callback = null){
+        // Reset the state
         state = {
             currentBlockNumber: null,
             startBlockNumber: null,
             endBlockNumber: null,
+            blockBatchCount: 0,
+            transactionBatchCount: 0,
             blocks: [],
             transactions:[]
         }
+
+        this.getCurrentBlockNumber(() => {
+            this.getBlockRange(start, end, () => {
+                this.getBlocks();
+            });
+        });
+        
+        if(callback){
+            return callback();
+        }
     }
 
-    getCurrentBlockNumber(callback){        
+    getCurrentBlockNumber(callback=null){        
         eth.getBlockNumber()
             .then((result) => {
                 state.currentBlockNumber = result;
@@ -27,7 +47,7 @@ class EthHelper{
         
     }
 
-    getBlockRange(startBlockVal, endBlockVal, callback){
+    getBlockRange(startBlockVal, endBlockVal, callback=null){
         
         if(startBlockVal === null && endBlockVal === null){
             // If no values, return.
@@ -46,7 +66,11 @@ class EthHelper{
             state.startBlockNumber = startBlockVal;
         }
        
-        return callback();
+        if(callback){
+            return callback();
+        }else{
+            return;
+        }
     }
 
     getBlocks(callback = null){
@@ -58,8 +82,22 @@ class EthHelper{
        
         for(var i=0; i < count; i++){
             console.log('Adding block to batch');
-            batch.add(eth.getBlock.request(state.endBlockNumber - i, this.getBlocksCallback));
+            // eslint-disable-next-line
+            batch.add(eth.getBlock.request(state.endBlockNumber - i, (err,result) => {
+                if(result){
+                    state.blocks.push(result);
+                    console.log('block added');
+                    state.blockBatchCount--;
+                }
+                if(state.blockBatchCount === 0 && state.blocks.length > 0){
+                    // We have received all of the batch, and can process the transactions.
+                    console.log('Received Blocks: ', state.blocks);
+                    console.log('Ready for transactions');
+                    this.getTransactions();
+                }
+            }));
             
+            state.blockBatchCount++;
         }
     
         if(batch.requests.length > 0){
@@ -67,68 +105,81 @@ class EthHelper{
             console.log('block batch executed');
         }
 
-        if(callback){
-            return callback();
-        }else{
-            return;
-        }
     }
-    getBlocksCallback(err, result){
-        // console.log('Blocks Errors: ', err);
-        // console.log('Blocks Data: ', result);
-        if(result){
-            state.blocks.push(result);
-            console.log('block added');
-        }
-    }
-    getTransactions(callback){
+    
+    getTransactions = () =>{
         console.log('Inside transactions');
         var batch = new eth.BatchRequest();
+        console.log('blocks length****: ', state.blocks.length);
+        console.log('Blocks: ', state.blocks);
         
-       
-        console.log('*****TRANS: ', state.blocks);
-        console.log('*****TRANS length: ', state.blocks.length);
         for(var i=0; i < state.blocks.length; i++){
-            console.log('Block # for trans: ', i);
-            var tranns = state.blocks[i].transactions;
-            for(var j=0; j < tranns.length; j++){
+            
+            var trans = state.blocks[i].transactions;
+            for(var j=0; j < trans.length; j++){
                 console.log('Add transactions to batch');
-                batch.add(eth.getTransaction.request(tranns[j], this.getTransactionsCallback));
+                // eslint-disable-next-line
+                batch.add(eth.getTransaction.request(trans[j], (err, result) => {
+                    
+                    if(result){
+                        state.transactions.push(result);
+                        console.log('transaction added');
+                        state.transactionBatchCount--;
+
+                        // Need to track the callbacks from the transaction batch
+                        // we have the increment of the transaction batch counter in the state
+                        // We can reduce that value as the results arrive and are pushed into the state.
+                        if(state.transactionBatchCount === 0){
+                            // We have received all of the transactions and can continue any other sequence code
+                            console.log('****All transactions received****');
+                        }
+                    }
+                }));
+                state.transactionBatchCount++;
             }
         }
-        // blocks.forEach(block => {
-        //     var transact = block.transactions;
-        //     console.log('Iter block for transactions', transact);
-        //     block.transactions.forEach(transaction => {
-        //         console.log('Adding block to batch');
-        //         console.log(transaction);
-        //         //batch.add(eth.getTransaction.request(transaction, this.getBlocksCallback));
-        //     });
-        // });
-        console.log('Trans batch: ', batch.requests);
+        
         if(batch.requests.length > 0){
             batch.execute();
             console.log('transaction batch executed');
         }
-
-        if(callback){
-            return callback();
-        }else{
-            return;
-        }
-        
     }
-    getTransactionsCallback(err, result){
-        console.log('Transaction Errors: ', err);
-        console.log('Transaction Data: ', result);
-        if(result){
-            state.transactions.push(result);
-            console.log('transaction added');
-        }
+    
+    processBlocks(){
+
+    }
+    processTransactions(){
+
     }
 
     getState(){
-        return state.blocks;
+        return state;
     }
+    // getUncles(){
+    //     state.blocks.forEach(item =>{
+    //         state.totalUncles += item.uncles.length;
+    //     })
+    // }
+    // getGasAverage(){
+    //     var total = 0;
+    //     var count = 0;
+    //     state.blocks.forEach(block => {
+    //         count++;
+    //         total += block.gasUsed; 
+    //         console.log('Gas used: ', block.gasUsed);
+    //     });
+    //     state.gasAverage = (total/count) * 100;
+    // }
+    // calcTotalEther(){
+        
+    // }
+
+    // calcPercentContract(){
+
+    // }
+    // calcUniqueRecords(){
+
+    // } 
+
 }
 export default EthHelper;
