@@ -20,6 +20,7 @@ class Results extends Component {
             <li>% Contract Transactions: {this.props.results.percentContract}</li>
             <li>Unique Sent Addresses: {this.props.results.uniqueSent}</li>
             <li>Unique Received Addresses: {this.props.results.uniqueReceived}</li>
+            <li>Gas Total: {this.props.results.gasTotal}</li>
             <li>Gas Average: {this.props.results.gasAverage}</li>
             <li>Total Uncles: {this.props.results.totalUncles}</li>
             
@@ -30,7 +31,7 @@ class Results extends Component {
                 <li>
                   <div>
                     <span><strong>Address</strong></span>
-                    <span><strong>Sent/Received</strong></span>
+                    {/* <span><strong>Sent/Received</strong></span> */}
                     <span><strong>Total Ether</strong></span>
                     <span><strong>Is Contract</strong></span>
                   </div>

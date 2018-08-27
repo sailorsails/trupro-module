@@ -1,14 +1,16 @@
 {
   "name": "trupro-module",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A basic ReactJS website module for querying transaction data from the Etheruem Blockchain.",
   "keywords": [
     "ethereum",
     "reactjs",
     "web3js",
+    "web3-eth",
     "blockchain",
-    "javascript abi",
-    "solidity"
+    "javascript",
+    "solidity",
+    "ether"
     ],
   "private": false,
   "dependencies": {

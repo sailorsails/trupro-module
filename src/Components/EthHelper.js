@@ -2,25 +2,18 @@ import Web3 from 'web3';
 
 // "Eth.providers.givenProvider" will be set if in an Ethereum supported browser.
 let web3 = new Web3(Web3.givenProvider);
-let state = {
-    currentBlockNumber: null,
-    startBlockNumber: null,
-    endBlockNumber: null,
-    blockBatchCount: 0,
-    transactionBatchCount: 0,
-    blocks: [],
-    transactions:[],
-};
-let calcResult = {
-    totalEther: 0,
-    gas: {total: 0, average: 0},
-    uncles: {total: 0},
-    transactions: {
-            sent: [{addres: '', total: 0}],
-            recevied: [{address: '', total: 0}]
-    }   
+let state;
+// let calcResult = {
+//     totalEther: 0,
+//     gas: {total: 0, average: 0},
+//     uncles: {total: 0},
+//     transactions: {
+//             sent: [],
+//             recevied: [],
+//             contractAddresses: [],
+//     }   
 
-};
+// };
 
 class EthHelper{
 
@@ -33,18 +26,28 @@ class EthHelper{
             blockBatchCount: 0,
             transactionBatchCount: 0,
             blocks: [],
-            transactions:[]
+            transactions:[],
+            result: {
+                totalEther: 0,
+                gas: {total: 0, average: 0},
+                uncles: {total: 0},
+                transactionsProcessed: {
+                        sent: [],
+                        recevied: [],
+                        contractAddresses: []
+                }   
+            }
         };
-        calcResult = {
-            totalEther: 0,
-            gas: {total: 0, average: 0},
-            uncles: {total: 0},
-            transactions: {
-                sent: [{addres: '', total: 0}],
-                recevied: [{address: '', total: 0}]
-            }   
+        // calcResult = {
+        //     totalEther: 0,
+        //     gas: {total: 0, average: 0},
+        //     uncles: {total: 0},
+        //     transactions: {
+        //         sent: [],
+        //         recevied: []
+        //     }   
             
-        };
+        // };
 
         this.getCurrentBlockNumber(() => {
             this.getBlockRange(start, end, () => {
@@ -167,16 +170,16 @@ class EthHelper{
     
     processBlocks(){
         // Process all blocks once they have been received
-        this.calcGas();
-        this.calcUncles();
+        this.getTotalGasAndAverage();
+        this.getUncles();
 
     }
     processTransactions(){
         // Process the transactions once all have been received
         // Determine all unique sent/received addresses
         // Determine total value for sent/received
-        this.calcTotalEther();
-        this.calcAddresses();
+        this.getTotalEther();
+        this.getAddresses();
     }
 
     getState(){
@@ -187,68 +190,122 @@ class EthHelper{
     // Block Methods
     // *************
     
-    calcGas(){       
+    getTotalGasAndAverage(){       
         if(state.blocks.length > 0){
             // Calculate the total and average gas for this query
             
             for(var i=0; i < state.blocks.length; i++){
-                calcResult.gas.total += state.blocks[i].gasUsed;
+                state.result.gas.total += state.blocks[i].gasUsed;
             }
-            calcResult.gas.average = calcResult.gas.total / state.blocks.length;
-            console.log('Gas: ', calcResult.gas);
+            state.result.gas.average = state.result.gas.total / state.blocks.length;
+            console.log('Gas: ', state.result.gas);
         } 
     }
 
 
-    calcUncles(){
+    getUncles(){
         for(var i=0; i < state.blocks.length; i++){
-            calcResult.uncles.total += state.blocks[i].uncles.length;
+            state.result.uncles.total += state.blocks[i].uncles.length;
         }
-        console.log('Number uncles: ', calcResult.uncles);
+        console.log('Number uncles: ', state.result.uncles);
     }
 
     // *******************
     // Transaction Methods
     // *******************
-    calcTotalEther(){
+    getTotalEther(){
         for(var i = 0; i < state.transactions.length; i++){
-            calcResult.totalEther += state.transactions[i].value;
+            state.result.totalEther += state.transactions[i].value;
         }
-        calcResult.totalEther = web3.utils.fromWei(calcResult.totalEther);
-        console.log('Convert to Ether from Wei', calcResult.totalEther);
+        state.result.totalEther = web3.utils.fromWei(state.result.totalEther);
+        console.log('Convert to Ether from Wei', state.result.totalEther);
 
     }
 
-    calcAddresses(){
+    getAddresses(){
         
         console.log("Trans count: ", state.transactions.length);
-        var sent = calcResult.transactions.sent;
-        var rec = calcResult.transactions.recevied;
+        var sent = state.result.transactionsProcessed.sent;
+        var received = state.result.transactionsProcessed.recevied;
         for(var i=0; i < state.transactions.length; i++){
             
             var val = state.transactions[i].value;
+           
+            var from = {};
             
-            var fromRecord = {address: state.transactions[i].from, total: val};
-            var toRecord = {address: state.transactions[i].to, total: val};
+            var currentFrom = state.transactions[i].from;
+
+            if(currentFrom in sent){
+                // Key already exists, update value
+                from[currentFrom] += val;
+
+            }else{
+                // key doesn't exist, create and set value
+                from[currentFrom] = val;
+                sent.push(from);
+
+            }
             
-            sent.push(fromRecord);
-            rec.push(toRecord);
+            var to = {};     
+            var currentTo = state.transactions[i].to; 
+            if(currentTo in received){
+                // Key already exists, update value                
+                to[currentTo] += val;
+
+            }else{
+                // key doesn't exist, create and set value                
+                to[currentTo] = val;
+                received.push(to);
+
+            }
         }
-        console.log('*TRANSACTIONS*: ', calcResult.transactions);
+        console.log('*TRANSACTION PROCESSING COMPLETE*: ', state.result.transactionsProcessed);
+        this.getContractStatus();
     }
-    
+    getContractStatus(){
+        var allAddresses = [];
 
-    
-    
-    calcReceivedAddressUnique(){
-        for(var i= 0; i < calcResult.address; i++){
-
+        for(var i = 0; i < state.transactions.length; i++){
+            if(state.transactions[i].from in allAddresses)
+            {
+                // Do nothing, address already captured
+            }else{
+                var newAddressFrom = {};
+                newAddressFrom[state.transactions[i].from] = false;
+                allAddresses.push(newAddressFrom);
+            }
+            if(state.transactions[i].to in allAddresses)
+            {
+                // Do nothing, address already captured
+            }else{
+                var newAddressTo = {};
+                newAddressTo[state.transactions[i].to] = false;
+                allAddresses.push(newAddressTo);
+            }
         }
-    }
+        // Query each address to see which is a contract
+        var batch = new web3.eth.BatchRequest();
+       
+        for(var j = 0; j < allAddresses.length; j++){
+            var address = Object.keys(allAddresses[j]).toString();
+            // TODO: This needs refactor because the getCode call will only return a result and doesn't appear to be capable to batching.
+            // eslint-disable-next-line
+            batch.add(web3.eth.getCode.request(address, '', (err, result) => {
+                if(err){
+                    console.log("Error in getContracts(): ", err);
+                }
+                if(result === '0x'){
+                    // Not a contract address
+                }else{
+                    state.results.transactionsProcessed.contractAddresses.push(result);
+                }
+                console.log('getContractStatus result: ', result);
+            }));
+        } 
 
-    calcSentAddressUnique(){
-        for(var i= 0; i < calcResult.address; i++){
-                    
+        if(batch.requests.length > 0){
+            batch.execute();
+            console.log('getContracts() batch executed');
         }
     }
 

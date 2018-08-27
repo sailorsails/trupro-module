@@ -15,6 +15,7 @@ class App extends Component {
       results:{
         totalEther: 0,
         percentContract: 0,
+        gasTotal: 0,
         gasAverage: 0,
         totalUncles: 0,
         blocks: [],
@@ -66,19 +67,6 @@ class App extends Component {
     this.setState({startBlockVal: searchFirst, endBlockVal: searchSecond}, () =>{
       
       ethHelper.getBlocksAndTransactions(this.state.startBlockVal, this.state.endBlockVal);
-      // ethHelper.getCurrentBlockNumber(() => {
-      //     ethHelper.getBlockRange(this.state.startBlockVal, this.state.endBlockVal, () =>{
-      //       ethHelper.getBlocks(() =>{              
-      //         this.setState({results: {blocks: [ethHelper.getState()]}}, () =>{
-      //           if(this.state.results.blocks){
-      //             console.log('MAIN blocks for trans: ', this.state.results.blocks);
-      //             ethHelper.getTransactions();
-      //           }
-      //         });
-              
-      //       });
-      //     });
-      // });
     });
   }
   
