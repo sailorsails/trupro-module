@@ -1,7 +1,7 @@
-import Eth from 'web3-eth';
+import Web3 from 'web3';
 
 // "Eth.providers.givenProvider" will be set if in an Ethereum supported browser.
-let eth = new Eth(Eth.givenProvider);
+let web3 = new Web3(Web3.givenProvider);
 let state = {
     currentBlockNumber: null,
     startBlockNumber: null,
@@ -10,7 +10,17 @@ let state = {
     transactionBatchCount: 0,
     blocks: [],
     transactions:[],
-}
+};
+let calcResult = {
+    totalEther: 0,
+    gas: {total: 0, average: 0},
+    uncles: {total: 0},
+    transactions: {
+            sent: [{addres: '', total: 0}],
+            recevied: [{address: '', total: 0}]
+    }   
+
+};
 
 class EthHelper{
 
@@ -24,7 +34,17 @@ class EthHelper{
             transactionBatchCount: 0,
             blocks: [],
             transactions:[]
-        }
+        };
+        calcResult = {
+            totalEther: 0,
+            gas: {total: 0, average: 0},
+            uncles: {total: 0},
+            transactions: {
+                sent: [{addres: '', total: 0}],
+                recevied: [{address: '', total: 0}]
+            }   
+            
+        };
 
         this.getCurrentBlockNumber(() => {
             this.getBlockRange(start, end, () => {
@@ -38,7 +58,7 @@ class EthHelper{
     }
 
     getCurrentBlockNumber(callback=null){        
-        eth.getBlockNumber()
+        web3.eth.getBlockNumber()
             .then((result) => {
                 state.currentBlockNumber = result;
                 console.log('Current block number: ', state.currentBlockNumber);
@@ -78,12 +98,12 @@ class EthHelper{
         console.log('End Block Number: ', state.endBlockNumber);
         var count = state.endBlockNumber - state.startBlockNumber || 0;
 
-        var batch = new eth.BatchRequest();
+        var batch = new web3.eth.BatchRequest();
        
         for(var i=0; i < count; i++){
             console.log('Adding block to batch');
             // eslint-disable-next-line
-            batch.add(eth.getBlock.request(state.endBlockNumber - i, (err,result) => {
+            batch.add(web3.eth.getBlock.request(state.endBlockNumber - i, (err,result) => {
                 if(result){
                     state.blocks.push(result);
                     console.log('block added');
@@ -108,18 +128,16 @@ class EthHelper{
     }
     
     getTransactions = () =>{
-        console.log('Inside transactions');
-        var batch = new eth.BatchRequest();
+        var batch = new web3.eth.BatchRequest();
         console.log('blocks length****: ', state.blocks.length);
         console.log('Blocks: ', state.blocks);
         
         for(var i=0; i < state.blocks.length; i++){
-            
             var trans = state.blocks[i].transactions;
             for(var j=0; j < trans.length; j++){
                 console.log('Add transactions to batch');
                 // eslint-disable-next-line
-                batch.add(eth.getTransaction.request(trans[j], (err, result) => {
+                batch.add(web3.eth.getTransaction.request(trans[j], (err, result) => {
                     
                     if(result){
                         state.transactions.push(result);
@@ -131,7 +149,9 @@ class EthHelper{
                         // We can reduce that value as the results arrive and are pushed into the state.
                         if(state.transactionBatchCount === 0){
                             // We have received all of the transactions and can continue any other sequence code
-                            console.log('****All transactions received****');
+                            console.log('****All transactions received****', state.transactions);
+                            this.processBlocks();
+                            this.processTransactions();
                         }
                     }
                 }));
@@ -146,40 +166,91 @@ class EthHelper{
     }
     
     processBlocks(){
+        // Process all blocks once they have been received
+        this.calcGas();
+        this.calcUncles();
 
     }
     processTransactions(){
-
+        // Process the transactions once all have been received
+        // Determine all unique sent/received addresses
+        // Determine total value for sent/received
+        this.calcTotalEther();
+        this.calcAddresses();
     }
 
     getState(){
         return state;
     }
-    // getUncles(){
-    //     state.blocks.forEach(item =>{
-    //         state.totalUncles += item.uncles.length;
-    //     })
-    // }
-    // getGasAverage(){
-    //     var total = 0;
-    //     var count = 0;
-    //     state.blocks.forEach(block => {
-    //         count++;
-    //         total += block.gasUsed; 
-    //         console.log('Gas used: ', block.gasUsed);
-    //     });
-    //     state.gasAverage = (total/count) * 100;
-    // }
-    // calcTotalEther(){
+    
+    // *************
+    // Block Methods
+    // *************
+    
+    calcGas(){       
+        if(state.blocks.length > 0){
+            // Calculate the total and average gas for this query
+            
+            for(var i=0; i < state.blocks.length; i++){
+                calcResult.gas.total += state.blocks[i].gasUsed;
+            }
+            calcResult.gas.average = calcResult.gas.total / state.blocks.length;
+            console.log('Gas: ', calcResult.gas);
+        } 
+    }
+
+
+    calcUncles(){
+        for(var i=0; i < state.blocks.length; i++){
+            calcResult.uncles.total += state.blocks[i].uncles.length;
+        }
+        console.log('Number uncles: ', calcResult.uncles);
+    }
+
+    // *******************
+    // Transaction Methods
+    // *******************
+    calcTotalEther(){
+        for(var i = 0; i < state.transactions.length; i++){
+            calcResult.totalEther += state.transactions[i].value;
+        }
+        calcResult.totalEther = web3.utils.fromWei(calcResult.totalEther);
+        console.log('Convert to Ether from Wei', calcResult.totalEther);
+
+    }
+
+    calcAddresses(){
         
-    // }
+        console.log("Trans count: ", state.transactions.length);
+        var sent = calcResult.transactions.sent;
+        var rec = calcResult.transactions.recevied;
+        for(var i=0; i < state.transactions.length; i++){
+            
+            var val = state.transactions[i].value;
+            
+            var fromRecord = {address: state.transactions[i].from, total: val};
+            var toRecord = {address: state.transactions[i].to, total: val};
+            
+            sent.push(fromRecord);
+            rec.push(toRecord);
+        }
+        console.log('*TRANSACTIONS*: ', calcResult.transactions);
+    }
+    
 
-    // calcPercentContract(){
+    
+    
+    calcReceivedAddressUnique(){
+        for(var i= 0; i < calcResult.address; i++){
 
-    // }
-    // calcUniqueRecords(){
+        }
+    }
 
-    // } 
+    calcSentAddressUnique(){
+        for(var i= 0; i < calcResult.address; i++){
+                    
+        }
+    }
 
 }
 export default EthHelper;

@@ -15,8 +15,6 @@ class App extends Component {
       results:{
         totalEther: 0,
         percentContract: 0,
-        uniqueSent: 0,
-        uniqueReceived: 0,
         gasAverage: 0,
         totalUncles: 0,
         blocks: [],

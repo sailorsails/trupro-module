@@ -90,9 +90,9 @@ class Search extends Component {
                         {this.state.searchType === 'Range' ? < label > Query a range using a starting and an ending block number. </label> : <label>Query a number of blocks backwards from the latest block.</label >} 
                         </div> 
                         {this.state.searchType === 'Range' ? < label > Block Start </label> : <label>Number of blocks</label >}
-                        <input name = 'searchTermFirst' type = 'number' ref = "searchTermFirst" value = {this.state.searchTermFirst} onChange = {this.handleSearchTermChange.bind(this)}/> 
+                        <input name = 'searchTermFirst' type = 'number' ref = "searchTermFirst" value = {this.state.searchTermFirst} min='1' step='1' onChange = {this.handleSearchTermChange.bind(this)}/> 
                         {this.state.searchType === 'Range' ? < label > Block End </label> : null} 
-                        {this.state.searchType === 'Range' ? < input name = 'searchTermSecond' type = 'number' ref = 'searchTermSecond' value = {this.state.searchTermSecond} onChange = {this.handleSearchTermChange.bind(this)}/> : null} 
+                        {this.state.searchType === 'Range' ? < input name = 'searchTermSecond' type = 'number' ref = 'searchTermSecond' min={this.state.searchTermFirst} step='1' value = {this.state.searchTermSecond} onChange = {this.handleSearchTermChange.bind(this)}/> : null} 
                         <button id = 'btnSearchGo' disabled = {!this.state.isSubmitEnabled} onClick = {this.handleSubmit.bind(this)} > Search </button> 
                     </div>
                     );
