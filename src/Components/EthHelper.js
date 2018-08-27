@@ -111,6 +111,8 @@ class EthHelper{
                     state.blocks.push(result);
                     console.log('block added');
                     state.blockBatchCount--;
+
+
                 }
                 if(state.blockBatchCount === 0 && state.blocks.length > 0){
                     // We have received all of the batch, and can process the transactions.
@@ -231,33 +233,37 @@ class EthHelper{
             
             var val = state.transactions[i].value;
            
-            var from = {};
-            
+            var from = {};            
             var currentFrom = state.transactions[i].from;
-
-            if(currentFrom in sent){
-                // Key already exists, update value
-                from[currentFrom] += val;
-
-            }else{
-                // key doesn't exist, create and set value
-                from[currentFrom] = val;
-                sent.push(from);
-
+            if(currentFrom !== null){
+                if(currentFrom in sent){
+                    // Key already exists, update value
+                    from[currentFrom] += val;
+    
+                }else{
+                    // key doesn't exist, create and set value
+                
+                    from[currentFrom] = val;
+                    sent.push(from);
+    
+                }
             }
             
             var to = {};     
             var currentTo = state.transactions[i].to; 
-            if(currentTo in received){
-                // Key already exists, update value                
-                to[currentTo] += val;
-
-            }else{
-                // key doesn't exist, create and set value                
-                to[currentTo] = val;
-                received.push(to);
-
+            if(currentTo !== null){
+                if(currentTo in received){
+                    // Key already exists, update value                
+                    to[currentTo] += val;
+    
+                }else{
+                    // key doesn't exist, create and set value                
+                    to[currentTo] = val;
+                    received.push(to);
+    
+                }
             }
+            
         }
         console.log('*TRANSACTION PROCESSING COMPLETE*: ', state.result.transactionsProcessed);
         this.getContractStatus();
@@ -284,29 +290,38 @@ class EthHelper{
             }
         }
         // Query each address to see which is a contract
-        var batch = new web3.eth.BatchRequest();
+        // var batch = new web3.eth.BatchRequest();
        
         for(var j = 0; j < allAddresses.length; j++){
             var address = Object.keys(allAddresses[j]).toString();
+            var contractResult = web3.eth.getCode(address);
+            if(contractResult === '0x'){
+                // not a contract
+            }else{
+                // is a contract
+                allAddresses[address] = true;
+            }
+
+
             // TODO: This needs refactor because the getCode call will only return a result and doesn't appear to be capable to batching.
             // eslint-disable-next-line
-            batch.add(web3.eth.getCode.request(address, '', (err, result) => {
-                if(err){
-                    console.log("Error in getContracts(): ", err);
-                }
-                if(result === '0x'){
-                    // Not a contract address
-                }else{
-                    state.results.transactionsProcessed.contractAddresses.push(result);
-                }
-                console.log('getContractStatus result: ', result);
-            }));
+            // batch.add(web3.eth.getCode.request(address, '', (err, result) => {
+            //     if(err){
+            //         console.log("Error in getContracts(): ", err);
+            //     }
+            //     if(result === '0x'){
+            //         // Not a contract address
+            //     }else{
+            //         state.results.transactionsProcessed.contractAddresses.push(result);
+            //     }
+            //     console.log('getContractStatus result: ', result);
+            // }));
         } 
-
-        if(batch.requests.length > 0){
-            batch.execute();
-            console.log('getContracts() batch executed');
-        }
+        console.log('Finished address processing');
+        // if(batch.requests.length > 0){
+        //     batch.execute();
+        //     console.log('getContracts() batch executed');
+        // }
     }
 
 }
