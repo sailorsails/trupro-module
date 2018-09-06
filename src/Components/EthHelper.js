@@ -318,6 +318,7 @@ class EthHelper{
             // }));
         } 
         console.log('Finished address processing');
+        
         // if(batch.requests.length > 0){
         //     batch.execute();
         //     console.log('getContracts() batch executed');
